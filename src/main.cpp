@@ -1,13 +1,16 @@
-
 #include <vector>
 #include <iostream>
 #include "user.h"
 #include "users.h"
+#include "board.h"
 
 using namespace std;
 
 
 int main() {
+  Board board;
+
+  board.Show();
 
     int choice = 0;
     std::string username;

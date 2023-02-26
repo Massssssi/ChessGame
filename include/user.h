@@ -3,66 +3,45 @@
 #include<string>
 
 
-class user
-{
-    user() = delete;
+class user {
+  user() = delete;
 
-  
-public:
-
-
+ public:
     //getters.
-    std::string get_fullname()
+
+
+    //std::string fullname() const { return full_name_; }
+    std::string& fullname() { return full_name_; }
+    void fullname(std::string fullname) { full_name_ = fullname; }
+
+    std::string username() const
     {
-        return full_name;
+        return username_;
     }
+    std::string& username() { return username_; }
 
-    std::string get_username()
+    std::string password() const {
+        return password_;
+    }
+    std::string& password() { return password_; }
+
+    int age() const
     {
-        return username;
+        return age_;
     }
-
-    std::string get_password()
-    {
-        return password;
-    }
-
-    int get_age()
-    {
-        return age;
-    }
-
-
-
-    //setters.
-    void set_username(std::string Username)
-    {
-        username = Username;
-    }
-
-    void set_password(std::string Password)
-    {
-        password = password;
-    }
-
-    void set_age(int Age)
-    {
-        age = Age;
-    }
-
-
+    int& age() { return age_; }
     
     user(std::string username, std::string password, int age);
 
-private:
-    std::string username;
-    std::string password;
-    std::string full_name;
-    int age;
-    int points;
-    int game_played;
-    int game_won;
-    int game_lost;
-    int game_draw;
-};
+    int total_games() const { return game_won_ + game_lost_ + game_draw_; }
 
+private:
+    std::string username_;
+    std::string password_;
+    std::string full_name_;
+    int age_;
+    int points_;
+    int game_won_;
+    int game_lost_;
+    int game_draw_;
+};
