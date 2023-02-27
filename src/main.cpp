@@ -9,7 +9,7 @@ using namespace std;
 
 int main() {
   Board board;
-
+  board.Initialize("wPe4 bKh8 bNf3");
   board.Show();
 
     int choice = 0;
