@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "piece.h"
+
 void PrintLine() {
   std::cout << std::endl;  
   for (auto i = 0; i < 8; i++) std::cout << "---";
@@ -25,38 +27,6 @@ void Board::Show() {
   }
 }
 
-std::ostream& operator<<(std::ostream& os, const Piece& piece) { 
-    os << piece.ToString();
-    return os; }
-
-std::string Piece::ToString() const {
-  std::string color_str = color == Color::Black ? "b" : "w";
-  std::string type_str;
-  switch (type) {
-    case Type::Bishop:
-      type_str = "B";
-      break;
-    case Type::King:
-      type_str = "K";
-      break;
-    case Type::Knight:
-      type_str = "N";
-      break;
-    case Type::Pawn:
-      type_str = "P";
-      break;
-    case Type::Queen:
-      type_str = "Q";
-      break;
-    case Type::Rook:
-      type_str = "R";
-      break;
-    default:
-      throw std::exception();
-  }
-  return color_str + type_str;
-}
-
 std::vector<std::string> Split(const std::string& s) {
   auto parts = std::vector<std::string>();
   auto start = 0;
@@ -75,4 +45,42 @@ void Board::Initialize(const std::string& initial_position) {
     Piece piece(move.substr(0, 2));
     board_position_[position] = piece;
   }
+}
+
+std::unordered_set<Move> Board::ValidMoves() const {
+  std::unordered_set<Move> moves;
+  const auto& white_moves = ValidMoves(PieceColor::White);
+  const auto& black_moves = ValidMoves(PieceColor::Black);
+
+  moves.insert(white_moves.begin(), white_moves.end());
+  moves.insert(black_moves.begin(), black_moves.end());
+
+  return moves;
+ }
+std::unordered_set<Move> Board::ValidMoves(PieceColor color) const {
+  std::unordered_set<Move> moves;
+
+  for (const auto& it : board_position_) {
+    const Piece& piece = it.second;
+    if (piece.Color() != color) {
+      continue;
+    }
+    const Position& position = it.first;
+    const auto& piece_moves = piece.ValidMoves(position, board_position_);
+    moves.insert(piece_moves.begin(), piece_moves.end()); 
+  }
+
+  return moves;
+}
+std::unordered_set<Move> Board::ValidMoves(Position start) const {
+  std::unordered_set<Move> moves;
+
+  auto it = board_position_.find(start);
+  if (it == board_position_.end()) {
+    return moves;
+  }
+
+  const Piece& piece = it->second;
+  moves = piece.ValidMoves(start, board_position_);
+  return moves;
 }
