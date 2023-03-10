@@ -16,10 +16,21 @@
 //  Position position;
 //};
 
-class Board {
+class Board {  
  public:
+  Board() : last_move_position_{1, 1} {}
   void Show();
   void Initialize(const std::string& initial_position);
+  void Initialize();
+
+  void Excute(const Move& move);
+
+  std::unordered_set<Move> ValidMoves() const;
+  std::unordered_set<Move> ValidMoves(PieceColor color) const;
+  std::unordered_set<Move> ValidMoves(Position start) const;
+
+  static std::unordered_set<Move> ValidMoves(
+      std::unordered_map<Position, Piece> board_position, PieceColor color);
  private:
   // 8x8 cells
   // cell -> empty: Piece.
@@ -29,10 +40,9 @@ class Board {
   // board position: b_king-xx;king-xx; [piece_position]*
   // piece_position: e4
   std::unordered_map<Position, Piece> board_position_;
+  Position last_move_position_;
 
-  std::unordered_set<Move> ValidMoves() const;
-  std::unordered_set<Move> ValidMoves(PieceColor color) const;
-  std::unordered_set<Move> ValidMoves(Position start) const;
+
   //  case1: pieceIsValidMove(position -> position)
   // case2: piece, position -> all valid positions.
 };

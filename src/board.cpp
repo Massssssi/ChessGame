@@ -47,6 +47,15 @@ void Board::Initialize(const std::string& initial_position) {
   }
 }
 
+void Board::Initialize() {
+  std::string initial_position =
+      "wRa1 wNb1 wBc1 wQd1 wKe1 wBf1 wNg1 wRh1 "
+      "wPa2 wPb2 wPc2 wPd2 wPe2 wPf2 wPg2 wPh2 "
+      "bRa8 bNb8 bBc8 bQd8 bKe8 bBf8 bNg8 bRh8 "
+      "bPa7 bPb7 bPc7 bPd7 bPe7 bPf7 bPg7 bPh7";
+  Initialize(initial_position);
+}
+
 std::unordered_set<Move> Board::ValidMoves() const {
   std::unordered_set<Move> moves;
   const auto& white_moves = ValidMoves(PieceColor::White);
@@ -66,7 +75,7 @@ std::unordered_set<Move> Board::ValidMoves(PieceColor color) const {
       continue;
     }
     const Position& position = it.first;
-    const auto& piece_moves = piece.ValidMoves(position, board_position_);
+    const auto& piece_moves = piece.ValidMoves(position, board_position_, last_move_position_);
     moves.insert(piece_moves.begin(), piece_moves.end()); 
   }
 
@@ -81,6 +90,41 @@ std::unordered_set<Move> Board::ValidMoves(Position start) const {
   }
 
   const Piece& piece = it->second;
-  moves = piece.ValidMoves(start, board_position_);
+  moves = piece.ValidMoves(start, board_position_, last_move_position_);
   return moves;
 }
+
+void Board::Excute(const Move& move) { 
+  board_position_.erase(move.start_);
+  if (move.move_type_ == MoveType::Normal) {
+    board_position_[move.end_] = Piece(move.type_, move.color_);
+  } else if (move.move_type_ == MoveType::KingRookMoveA) {
+    board_position_[Position(move.start_.row, Column::C)] = Piece(move.type_, move.color_);
+    board_position_[Position(move.start_.row, Column::D)] = Piece(PieceType::Rook, move.color_);
+    board_position_.erase(Position(move.start_.row, Column::A));
+  } else if(move.move_type_ == MoveType::KingRookMoveH){
+    board_position_[Position(move.start_.row, Column::G)] =
+        Piece(move.type_, move.color_);
+    board_position_[Position(move.start_.row, Column::F)] =
+        Piece(PieceType::Rook, move.color_);
+    board_position_.erase(Position(move.start_.row, Column::H));
+  }
+}
+
+std::unordered_set<Move> Board::ValidMoves(
+    std::unordered_map<Position, Piece> board_position, PieceColor color) {
+  std::unordered_set<Move> moves;
+
+  for (const auto& it : board_position) {
+    const Piece& piece = it.second;
+    if (piece.Color() != color) {
+      continue;
+    }
+    const Position& position = it.first;
+    const auto& piece_moves =
+        piece.ValidMoves(position, board_position, Position{1, 1});
+    moves.insert(piece_moves.begin(), piece_moves.end());
+  }
+
+  return moves;
+  }
