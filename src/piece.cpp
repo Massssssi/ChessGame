@@ -243,6 +243,16 @@ std::unordered_set<Move> Piece::BishopValidMoves(
     return moves;
 }
 
+std::unordered_set<Move> Piece::KnightValidMoves(
+    Position start, std::unordered_map<Position, Piece> board_position,
+    Position last_move) const {
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 2}, {2, 1}, {-1, 2}, {2, -1}, {1, -2}, {-2, 1}, {-2, -1}, {-1, -2} };
+    std::unordered_set<Move> moves =
+        QueenRookBishopMoves(start, board_position, color_, type_, directions, true);
+    return moves;
+}
+
 std::unordered_set<Move> Piece::RookValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
     Position last_move) const {
