@@ -225,6 +225,23 @@ std::unordered_set<Move> Piece::PawnValidMoves(
     return moves;
 }
 
+std::unordered_set<Move> Piece::BishopValidMoves(
+    Position start, std::unordered_map<Position, Piece> board_position,
+    Position last_move) const {
+    // 4 Directions
+    // Either Position(-1, 0)  (0,0)......(0,7)
+    //                           .          .
+    //                         (7,0) .....(7,7)
+    // OR Position not empty. If self, no add.
+    //                        if opponent, add and stop.
+
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 1}, {1, -1}, {-1, -1}, {-1, 1} };
+
+    std::unordered_set<Move> moves =
+        QueenRookBishopMoves(start, board_position, color_, type_, directions);
+    return moves;
+}
 
 std::unordered_set<Move> Piece::RookValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
