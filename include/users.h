@@ -1,5 +1,3 @@
-#pragma once
-
 #include"user.h"
 #include <vector>
 #include <iostream>
