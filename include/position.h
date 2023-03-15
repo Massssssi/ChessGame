@@ -12,9 +12,23 @@ class Position {
     row = static_cast<Row>(position_str[1] - '1');
     column = static_cast<Column>(position_str[0] - 'a');
   }
-  Position(int i, int j) {
-    row = static_cast<Row>(i);
-    column = static_cast<Column>(j);
+
+  Position(int r, int c) {
+    row = static_cast<Row>(r);
+    column = static_cast<Column>(c);
+  }
+  Position(Row r, Column c) {
+    row = r;
+    column = c;
+  }
+  Position(const Position& other) {
+    row = other.row;
+    column = other.column;
+  }
+
+  Position& operator=(const Position& other) { row = other.row;
+    column = other.column;
+    return *this;
   }
   Row row;
   Column column;
