@@ -47,7 +47,42 @@ std::unordered_set<Move> QueenRookBishopMoves(
   return moves;
 }
 
+void FilterOnKingPosition(std::unordered_set<Move>& moves,
+     std::unordered_map<Position, Piece> board_position) {
+  if (moves.empty()) {
+    return;
+  }
+  const auto color = board_position[moves.begin()->start_].Color();
+  Position king_position(1, 1);
+  for (auto it = board_position.begin(); it != board_position.end(); ++it) {
+    if (it->second.Color() == color && it->second.Type() == PieceType::King) {
+      king_position = it->first;
+    }
+  }
+  for (auto move_it = moves.begin(); move_it != moves.end();) {
+    auto move = *move_it;
+    auto board_copy = board_position;
+    board_copy[move.end_] = Piece(move.type_, move.color_);
+    board_copy.erase(move.start_);
 
+    auto opponent_moves = Board::ValidMoves(
+        board_copy, move.color_ == PieceColor::Black ? PieceColor::White
+                                                     : PieceColor::Black);
+    auto it =
+        std::find_if(opponent_moves.begin(), opponent_moves.end(), [&](Move m) {
+          if (king_position == m.end_) {
+            return true;
+          }
+          return false;
+        });
+
+    if (it != opponent_moves.end()) {
+      move_it = moves.erase(move_it);
+    } else {
+      ++move_it;
+    }
+  }
+}
 
 Piece::Piece(const std::string& piece_str) {
   color_ = piece_str[0] == 'w' ? PieceColor::White : PieceColor::Black;
@@ -221,7 +256,7 @@ std::unordered_set<Move> Piece::PawnValidMoves(
   // start.row += step;
   // start.row += step; start.column +/-= 1;
   // start.row += 2 * step;
-
+  FilterOnKingPosition(moves, board_position);
   
   return moves;
 }
@@ -241,10 +276,144 @@ std::unordered_set<Move> Piece::BishopValidMoves(
 
   std::unordered_set<Move> moves =
       QueenRookBishopMoves(start, board_position, color_, type_, directions);
+  FilterOnKingPosition(moves, board_position);
   return moves;
 }
 
+std::unordered_set<Move> Piece::KingValidMoves(
+    Position start, std::unordered_map<Position, Piece> board_position,
+    Position last_move) const {
+  const std::vector<std::pair<int, int>> directions = {
+      {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
+  std::unordered_set<Move> moves = QueenRookBishopMoves(
+      start, board_position, color_, type_, directions, true);
+  // K-R
+  //
+  for (auto move_it = moves.begin(); move_it != moves.end();) {
+    auto move = *move_it;
+    auto board_copy = board_position;
+    board_copy[move.end_] = Piece(move.type_, move.color_);
+    board_copy.erase(start);
 
+    auto opponent_moves = Board::ValidMoves(
+        board_copy, move.color_ == PieceColor::Black ? PieceColor::White
+                                                     : PieceColor::Black);
+    auto it =
+        std::find_if(opponent_moves.begin(), opponent_moves.end(), [&](Move m) {
+          if (move.end_ == m.end_) {
+            return true;
+          }
+          return false;
+        });
+
+    if (it != opponent_moves.end()) {
+      move_it = moves.erase(move_it);
+    } else {
+      ++move_it;
+    }
+  }
+  auto opponent_moves = Board::ValidMoves(
+      board_position, board_position[start].Color() == PieceColor::Black
+                          ? PieceColor::White
+                          : PieceColor::Black);
+  // Adding R-K-R moves
+  if (board_position[start].Color() == PieceColor::White) {
+    if (start.row != Row::_1 || start.column != Column::E) {
+      return moves;
+    }
+    const auto b1 = Position("b1");
+    const auto c1 = Position("c1");
+    const auto d1 = Position("d1");
+    if (board_position.find(Position("a1")) != board_position.end() && 
+        board_position.find(b1) == board_position.end() &&
+        board_position.find(c1) == board_position.end() &&
+        board_position.find(d1) == board_position.end()) {
+      auto it = std::find_if(opponent_moves.begin(), opponent_moves.end(),
+                             [&](Move m) {                               
+                               if (b1 == m.end_ || c1 == m.end_ || d1 == m.end_ || start == m.end_) {
+                                 return true;
+                               }
+                               return false;
+                             });
+
+      if (it == opponent_moves.end()) {
+        Move move = {start, start, board_position[start].Color(),
+                     board_position[start].Type(), MoveType::KingRookMoveA};
+        moves.insert(move);
+      }
+    }
+
+    const auto f1 = Position("f1");
+    const auto g1 = Position("g1");
+    if (board_position.find(Position("h1")) != board_position.end() &&
+        board_position.find(f1) == board_position.end() &&
+        board_position.find(g1) == board_position.end()
+        ) {
+      auto it = std::find_if(opponent_moves.begin(), opponent_moves.end(),
+                             [&](Move m) {
+                               if (f1 == m.end_ || g1 == m.end_ || start == m.end_) {
+                                 return true;
+                               }
+                               return false;
+                             });
+
+      if (it == opponent_moves.end()) {
+        Move move = {start, start, board_position[start].Color(),
+                     board_position[start].Type(), MoveType::KingRookMoveH};
+        moves.insert(move);
+      }
+    }
+  }
+  if (board_position[start].Color() == PieceColor::Black) {
+    if (start.row != Row::_8 || start.column != Column::E) {
+      return moves;
+    }
+
+    const auto b8 = Position("b8");
+    const auto c8 = Position("c8");
+    const auto d8 = Position("d8");
+    if (board_position.find(Position("a8")) != board_position.end() &&
+        board_position.find(b8) == board_position.end() &&
+        board_position.find(c8) == board_position.end() &&
+        board_position.find(d8) == board_position.end()) {
+      auto it = std::find_if(opponent_moves.begin(), opponent_moves.end(),
+                             [&](Move m) {
+                               if (b8 == m.end_ || c8 == m.end_ ||
+                                   d8 == m.end_ || start == m.end_) {
+                                 return true;
+                               }
+                               return false;
+                             });
+
+      if (it == opponent_moves.end()) {
+        Move move = {start, start, board_position[start].Color(),
+                     board_position[start].Type(), MoveType::KingRookMoveA};
+        moves.insert(move);
+      }
+    }
+
+    const auto f8 = Position("f8");
+    const auto g8 = Position("g8");
+    if (board_position.find(Position("h8")) != board_position.end() &&
+        board_position.find(f8) == board_position.end() &&
+        board_position.find(g8) == board_position.end()) {
+      auto it = std::find_if(
+          opponent_moves.begin(), opponent_moves.end(), [&](Move m) {
+            if (f8 == m.end_ || g8 == m.end_ || start == m.end_) {
+              return true;
+            }
+            return false;
+          });
+
+      if (it == opponent_moves.end()) {
+        Move move = {start, start, board_position[start].Color(),
+                     board_position[start].Type(), MoveType::KingRookMoveH};
+        moves.insert(move);
+      }
+    }
+  }
+  return moves;
+}
 std::unordered_set<Move> Piece::QueenValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
     Position last_move) const {
@@ -253,6 +422,7 @@ std::unordered_set<Move> Piece::QueenValidMoves(
 
   std::unordered_set<Move> moves =
       QueenRookBishopMoves(start, board_position, color_, type_, directions);
+  FilterOnKingPosition(moves, board_position);
   return moves;
 }
 std::unordered_set<Move> Piece::KnightValidMoves(
@@ -262,6 +432,7 @@ std::unordered_set<Move> Piece::KnightValidMoves(
       {1, 2}, {2, 1}, {-1, 2}, {2, -1}, {1, -2}, {-2, 1}, {-2, -1}, {-1, -2}};
   std::unordered_set<Move> moves =
       QueenRookBishopMoves(start, board_position, color_, type_, directions, true);
+  FilterOnKingPosition(moves, board_position);
   return moves;
 }
 std::unordered_set<Move> Piece::RookValidMoves(
@@ -271,7 +442,7 @@ std::unordered_set<Move> Piece::RookValidMoves(
       {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
   std::unordered_set<Move> moves =
       QueenRookBishopMoves(start, board_position, color_, type_, directions);
-
+  FilterOnKingPosition(moves, board_position);
   return moves;
 }
 
