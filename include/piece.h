@@ -24,7 +24,6 @@ class Piece {
   std::unordered_set<Move> ValidMoves(
       Position start, std::unordered_map<Position, Piece> board_position,
       Position last_move) const;
- private:
 
   std::unordered_set<Move> PawnValidMoves(
       Position start, std::unordered_map<Position, Piece> board_position,
