@@ -1,8 +1,9 @@
-#include "board.h"
+#pragma once
+#include "../include/board.h"
 
 #include <iostream>
 
-#include "piece.h"
+#include "../include/piece.h"
 
 void PrintLine() {
   std::cout << std::endl;  

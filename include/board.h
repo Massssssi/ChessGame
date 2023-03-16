@@ -31,6 +31,15 @@ class Board {
 
   static std::unordered_set<Move> ValidMoves(
       std::unordered_map<Position, Piece> board_position, PieceColor color);
+  const Piece& operator[](const Position& position) const {
+    return (*board_position_.find(position)).second;
+  }
+  bool Exist(const Position& position) const {
+    if (board_position_.find(position) != board_position_.end()) {
+      return true;
+    }
+    return false;
+  }
  private:
   // 8x8 cells
   // cell -> empty: Piece.
@@ -46,4 +55,3 @@ class Board {
   //  case1: pieceIsValidMove(position -> position)
   // case2: piece, position -> all valid positions.
 };
-
