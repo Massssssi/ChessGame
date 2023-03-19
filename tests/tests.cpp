@@ -42,3 +42,30 @@ TEST(PawnValidMovesTest, WhitePawnCanMoveOneOrTwoStepsForward) {
 
     EXPECT_EQ(actual_moves, expected_moves);
 }
+
+TEST(PieceTest, RookValidMoves) {
+    Piece rook(PieceType::Rook,PieceColor::White);
+    std::unordered_map<Position, Piece> board_position;
+    Position start("a1");
+    board_position[start] = rook;
+    Position last_move("a2");
+    std::unordered_set<Move> expected_moves{ {start, Position("b1"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("c1"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("d1"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("e1"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("f1"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("g1"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("h1"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("a2"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("a3"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("a4"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("a5"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("a6"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("a7"), PieceColor::White, PieceType::Rook, MoveType::Normal},
+                                             {start, Position("a8"), PieceColor::White, PieceType::Rook, MoveType::Normal} };
+    auto moves = rook.RookValidMoves(start, board_position, last_move);
+    EXPECT_EQ(moves.size(), expected_moves.size());
+    for (const auto& move : expected_moves) {
+        EXPECT_EQ(moves.count(move), 1);
+    }
+}
