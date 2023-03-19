@@ -1,4 +1,3 @@
-#pragma once
 #include "../include/board.h"
 
 #include <iostream>
@@ -128,4 +127,32 @@ std::unordered_set<Move> Board::ValidMoves(
   }
 
   return moves;
+}
+
+std::unordered_set<Position> Board::AttackedPositions(
+    std::unordered_map<Position, Piece> board_position, PieceColor color) {
+  std::unordered_set<Position> positions;
+
+  for (const auto& it : board_position) {
+    const Piece& piece = it.second;
+    if (piece.Color() != color) {
+      continue;
+    }
+    const Position& position = it.first;
+    const auto& attacked_positions =
+        piece.AttackedPositions(position, board_position);
+    positions.insert(attacked_positions.begin(), attacked_positions.end());
+  }
+
+  return positions;
+}
+
+std::unordered_set<Position> Board::AttackedPositions(
+      PieceColor color) const {
+  std::unordered_set<Position> positions =
+      Board::AttackedPositions(board_position_, color);
+
+    
+
+    return positions;
   }

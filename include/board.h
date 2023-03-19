@@ -28,9 +28,13 @@ class Board {
   std::unordered_set<Move> ValidMoves() const;
   std::unordered_set<Move> ValidMoves(PieceColor color) const;
   std::unordered_set<Move> ValidMoves(Position start) const;
+  std::unordered_set<Position> AttackedPositions(PieceColor color) const;
 
   static std::unordered_set<Move> ValidMoves(
       std::unordered_map<Position, Piece> board_position, PieceColor color);
+  static std::unordered_set<Position> AttackedPositions(
+      std::unordered_map<Position, Piece> board_position, PieceColor color);
+
   const Piece& operator[](const Position& position) const {
     return (*board_position_.find(position)).second;
   }
@@ -55,3 +59,4 @@ class Board {
   //  case1: pieceIsValidMove(position -> position)
   // case2: piece, position -> all valid positions.
 };
+

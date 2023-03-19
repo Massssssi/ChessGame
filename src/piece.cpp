@@ -1,4 +1,3 @@
-#pragma once
 #include "../include/piece.h"
 
 #include "../include/board.h"
@@ -30,7 +29,7 @@ std::unordered_set<Move> QueenRookBishopMoves(
       position.column = static_cast<Column>(static_cast<int>(position.column) +
                                             direction.second);
       Move copy(move);
-      move.end_ = position;
+      copy.end_ = position;
       auto it = board_position.find(position);
       if (it != board_position.end()) {
         if (board_position[position].Color() != color) {
@@ -45,6 +44,48 @@ std::unordered_set<Move> QueenRookBishopMoves(
     }
   }
   return moves;
+}
+
+std::unordered_set<Position> QueenRookBishopAttackedPositions(
+    Position start, std::unordered_map<Position, Piece> board_position,
+    PieceColor color, PieceType type,
+    const std::vector<std::pair<int, int>> directions, bool one_step = false) {
+  std::unordered_set<Position> positions;
+
+  for (const auto& direction : directions) {
+    Position position = start;
+    while (true) {
+      if (direction.first == -1 && position.row == Row::_1) {
+        break;
+      }
+      if (direction.first == 1 && position.row == Row::_8) {
+        break;
+      }
+      if (direction.second == -1 && position.column == Column::A) {
+        break;
+      }
+      if (direction.second == 1 && position.column == Column::H) {
+        break;
+      }
+      position.row =
+          static_cast<Row>(static_cast<int>(position.row) + direction.first);
+      position.column = static_cast<Column>(static_cast<int>(position.column) +
+                                            direction.second);
+
+      auto it = board_position.find(position);
+      if (it != board_position.end()) {
+        
+          positions.insert(position);
+        
+        break;
+      }
+      positions.insert(position);
+      if (one_step) {
+        break;
+      }
+    }
+  }
+  return positions;
 }
 
 void FilterOnKingPosition(std::unordered_set<Move>& moves,
@@ -65,18 +106,18 @@ void FilterOnKingPosition(std::unordered_set<Move>& moves,
     board_copy[move.end_] = Piece(move.type_, move.color_);
     board_copy.erase(move.start_);
 
-    auto opponent_moves = Board::ValidMoves(
+    auto opponent_attacked_positions = Board::AttackedPositions(
         board_copy, move.color_ == PieceColor::Black ? PieceColor::White
                                                      : PieceColor::Black);
-    auto it =
-        std::find_if(opponent_moves.begin(), opponent_moves.end(), [&](Move m) {
-          if (king_position == m.end_) {
+    auto it = std::find_if(opponent_attacked_positions.begin(),
+                     opponent_attacked_positions.end(), [&](Position position) {
+          if (king_position == position) {
             return true;
           }
           return false;
         });
 
-    if (it != opponent_moves.end()) {
+    if (it != opponent_attacked_positions.end()) {
       move_it = moves.erase(move_it);
     } else {
       ++move_it;
@@ -166,6 +207,29 @@ std::unordered_set<Move> Piece::ValidMoves(
   return moves;
 }
 
+std::unordered_set<Position> Piece::AttackedPositions(
+    Position start, std::unordered_map<Position, Piece> board_position) const {
+  std::unordered_set<Position> positions;
+
+  switch (type_) {
+    case PieceType::Bishop:
+      return BishopAttackedPositions(start, board_position);
+    case PieceType::King:
+      return KingAttackedPositions(start, board_position);
+    case PieceType::Knight:
+      return KnightAttackedPositions(start, board_position);
+    case PieceType::Pawn:
+      return PawnAttackedPositions(start, board_position);
+    case PieceType::Queen:
+      return QueenAttackedPositions(start, board_position);
+    case PieceType::Rook:
+      return RookAttackedPositions(start, board_position);
+    default:
+      throw std::exception();
+  }
+  return positions;
+}
+
 std::unordered_set<Move> Piece::PawnValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
     Position last_move) const {
@@ -206,15 +270,14 @@ std::unordered_set<Move> Piece::PawnValidMoves(
 
     left_position.column =
         static_cast<Column>(static_cast<int>(left_position.column) - 1);
-
+    next_1position.column = left_position.column;
     if (last_move == left_position &&
         ((left_position.row == Row::_5 && color_ == PieceColor::White) ||
          (left_position.row == Row::_4 && color_ == PieceColor::Black)) &&
         board_position.find(left_position) != board_position.end() &&
         board_position[left_position].Color() != color_ &&
         board_position[left_position].Type() == PieceType::Pawn) {
-      auto copy = move;
-      next_1position.column = left_position.column;
+      auto copy = move;      
       copy.end_ = next_1position;
       moves.insert(copy);
     }
@@ -232,15 +295,14 @@ std::unordered_set<Move> Piece::PawnValidMoves(
 
     right_position.column =
         static_cast<Column>(static_cast<int>(right_position.column) + 1);
-
+    next_1position.column = right_position.column;
     if (last_move == right_position &&
         ((right_position.row == Row::_5 && color_ == PieceColor::White) ||
          (right_position.row == Row::_4 && color_ == PieceColor::Black)) &&
         board_position.find(right_position) != board_position.end() &&
         board_position[right_position].Color() != color_ &&
         board_position[right_position].Type() == PieceType::Pawn) {
-      auto copy = move;
-      next_1position.column = right_position.column;
+      auto copy = move;      
       copy.end_ = next_1position;
       moves.insert(copy);
     }
@@ -295,24 +357,24 @@ std::unordered_set<Move> Piece::KingValidMoves(
     board_copy[move.end_] = Piece(move.type_, move.color_);
     board_copy.erase(start);
 
-    auto opponent_moves = Board::ValidMoves(
+    auto opponent_attacked_positions = Board::AttackedPositions(
         board_copy, move.color_ == PieceColor::Black ? PieceColor::White
                                                      : PieceColor::Black);
-    auto it =
-        std::find_if(opponent_moves.begin(), opponent_moves.end(), [&](Move m) {
-          if (move.end_ == m.end_) {
+    auto it = std::find_if(opponent_attacked_positions.begin(),
+                           opponent_attacked_positions.end(), [&](Position position) {
+          if (move.end_ == position) {
             return true;
           }
           return false;
         });
 
-    if (it != opponent_moves.end()) {
+    if (it != opponent_attacked_positions.end()) {
       move_it = moves.erase(move_it);
     } else {
       ++move_it;
     }
   }
-  auto opponent_moves = Board::ValidMoves(
+  auto opponent_attacked_positions = Board::AttackedPositions(
       board_position, board_position[start].Color() == PieceColor::Black
                           ? PieceColor::White
                           : PieceColor::Black);
@@ -328,15 +390,16 @@ std::unordered_set<Move> Piece::KingValidMoves(
         board_position.find(b1) == board_position.end() &&
         board_position.find(c1) == board_position.end() &&
         board_position.find(d1) == board_position.end()) {
-      auto it = std::find_if(opponent_moves.begin(), opponent_moves.end(),
-                             [&](Move m) {                               
-                               if (b1 == m.end_ || c1 == m.end_ || d1 == m.end_ || start == m.end_) {
+      auto it = std::find_if(opponent_attacked_positions.begin(),
+                             opponent_attacked_positions.end(),
+                             [&](Position position) {                               
+                               if (b1 == position || c1 == position || d1 == position || start == position) {
                                  return true;
                                }
                                return false;
                              });
 
-      if (it == opponent_moves.end()) {
+      if (it == opponent_attacked_positions.end()) {
         Move move = {start, start, board_position[start].Color(),
                      board_position[start].Type(), MoveType::KingRookMoveA};
         moves.insert(move);
@@ -349,15 +412,16 @@ std::unordered_set<Move> Piece::KingValidMoves(
         board_position.find(f1) == board_position.end() &&
         board_position.find(g1) == board_position.end()
         ) {
-      auto it = std::find_if(opponent_moves.begin(), opponent_moves.end(),
-                             [&](Move m) {
-                               if (f1 == m.end_ || g1 == m.end_ || start == m.end_) {
+      auto it = std::find_if(opponent_attacked_positions.begin(),
+                             opponent_attacked_positions.end(),
+                             [&](Position position) {
+                               if (f1 == position || g1 == position || start == position) {
                                  return true;
                                }
                                return false;
                              });
 
-      if (it == opponent_moves.end()) {
+      if (it == opponent_attacked_positions.end()) {
         Move move = {start, start, board_position[start].Color(),
                      board_position[start].Type(), MoveType::KingRookMoveH};
         moves.insert(move);
@@ -376,16 +440,17 @@ std::unordered_set<Move> Piece::KingValidMoves(
         board_position.find(b8) == board_position.end() &&
         board_position.find(c8) == board_position.end() &&
         board_position.find(d8) == board_position.end()) {
-      auto it = std::find_if(opponent_moves.begin(), opponent_moves.end(),
-                             [&](Move m) {
-                               if (b8 == m.end_ || c8 == m.end_ ||
-                                   d8 == m.end_ || start == m.end_) {
+      auto it = std::find_if(opponent_attacked_positions.begin(),
+                             opponent_attacked_positions.end(),
+                             [&](Position position) {
+                               if (b8 == position || c8 == position ||
+                                   d8 == position || start == position) {
                                  return true;
                                }
                                return false;
                              });
 
-      if (it == opponent_moves.end()) {
+      if (it == opponent_attacked_positions.end()) {
         Move move = {start, start, board_position[start].Color(),
                      board_position[start].Type(), MoveType::KingRookMoveA};
         moves.insert(move);
@@ -397,15 +462,15 @@ std::unordered_set<Move> Piece::KingValidMoves(
     if (board_position.find(Position("h8")) != board_position.end() &&
         board_position.find(f8) == board_position.end() &&
         board_position.find(g8) == board_position.end()) {
-      auto it = std::find_if(
-          opponent_moves.begin(), opponent_moves.end(), [&](Move m) {
-            if (f8 == m.end_ || g8 == m.end_ || start == m.end_) {
+      auto it = std::find_if(opponent_attacked_positions.begin(),
+                       opponent_attacked_positions.end(), [&](Position position) {
+            if (f8 == position || g8 == position || start == position) {
               return true;
             }
             return false;
           });
 
-      if (it == opponent_moves.end()) {
+      if (it == opponent_attacked_positions.end()) {
         Move move = {start, start, board_position[start].Color(),
                      board_position[start].Type(), MoveType::KingRookMoveH};
         moves.insert(move);
@@ -444,5 +509,96 @@ std::unordered_set<Move> Piece::RookValidMoves(
       QueenRookBishopMoves(start, board_position, color_, type_, directions);
   FilterOnKingPosition(moves, board_position);
   return moves;
+}
+
+std::unordered_set<Position> Piece::PawnAttackedPositions(
+    Position start, std::unordered_map<Position, Piece> board_position) const {
+  std::unordered_set<Position> positions;
+  int step = 1;
+  if (color_ == PieceColor::White) {
+    step = 1;
+  } else {
+    step = -1;
+  }
+  
+  auto left_position = start;
+  if (start.column != Column::A) {
+    left_position.column = static_cast<Column>(static_cast<int>(left_position.column) - 1);
+    if ((color_ == PieceColor::White && start.row != Row::_8) || (color_ == PieceColor::Black && start.row != Row::_1)) {
+      left_position.row =
+          static_cast<Row>(static_cast<int>(left_position.row) + step);
+      positions.insert(left_position);
+    }
+  }
+
+  auto right_position = start;
+  if (start.column != Column::H) {
+    right_position.column =
+        static_cast<Column>(static_cast<int>(right_position.column) - 1);
+    if ((color_ == PieceColor::White && start.row != Row::_8) ||
+        (color_ == PieceColor::Black && start.row != Row::_1)) {
+      right_position.row =
+          static_cast<Row>(static_cast<int>(right_position.row) + step);
+      positions.insert(right_position);
+    }
+  }
+
+  return positions;
+}
+
+std::unordered_set<Position> Piece::BishopAttackedPositions(
+    Position start, std::unordered_map<Position, Piece> board_position) const {
+  // 4 Directions
+  // Either Position(-1, 0)  (0,0)......(0,7)
+  //                           .          .
+  //                         (7,0) .....(7,7)
+  // OR Position not empty. If self, no add.
+  //                        if opponent, add and stop.
+
+  const std::vector<std::pair<int, int>> directions = {
+      {1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
+
+  std::unordered_set<Position> positions =
+      QueenRookBishopAttackedPositions(start, board_position, color_, type_, directions);
+  
+  return positions;
+}
+
+std::unordered_set<Position> Piece::KingAttackedPositions(
+    Position start, std::unordered_map<Position, Piece> board_position) const {
+  const std::vector<std::pair<int, int>> directions = {
+      {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
+  std::unordered_set<Position> positions = QueenRookBishopAttackedPositions(
+      start, board_position, color_, type_, directions, true);
+
+  return positions;
+}
+
+std::unordered_set<Position> Piece::QueenAttackedPositions(
+    Position start, std::unordered_map<Position, Piece> board_position) const {
+  const std::vector<std::pair<int, int>> directions = {
+      {1, 1}, {1, -1}, {-1, -1}, {-1, 1}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+  std::unordered_set<Position> positions =
+      QueenRookBishopAttackedPositions(start, board_position, color_, type_, directions);
+  return positions;
+}
+
+std::unordered_set<Position> Piece::KnightAttackedPositions(
+    Position start, std::unordered_map<Position, Piece> board_position) const {
+  const std::vector<std::pair<int, int>> directions = {
+      {1, 2}, {2, 1}, {-1, 2}, {2, -1}, {1, -2}, {-2, 1}, {-2, -1}, {-1, -2}};
+  std::unordered_set<Position> positions = QueenRookBishopAttackedPositions(
+      start, board_position, color_, type_, directions);
+  return positions;
+}
+
+std::unordered_set<Position> Piece::RookAttackedPositions(
+    Position start, std::unordered_map<Position, Piece> board_position) const {
+  const std::vector<std::pair<int, int>> directions = {
+      {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+  std::unordered_set<Position> positions = QueenRookBishopAttackedPositions(
+      start, board_position, color_, type_, directions);
+  return positions;
 }
 
