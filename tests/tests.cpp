@@ -70,11 +70,29 @@ TEST(PieceTest, RookValidMoves) {
     }
 }
 
+/*TEST(PieceTest, KnightValidMoves) {
+    Piece knight(PieceType::Knight, PieceColor::White);
+    std::unordered_map<Position, Piece> board_position;
+    Position start("b1");
+    board_position[start] = knight;
+    Position last_move("a3");
+
+
+    std::unordered_set<Move> expected_moves{ {start, Position("a3"), PieceColor::White, PieceType::Knight, MoveType::Normal},
+                                             {start, Position("c3"), PieceColor::White, PieceType::Knight, MoveType::Normal}};
+    auto moves = knight.KnightValidMoves(start, board_position, last_move);
+    EXPECT_EQ(moves.size(), expected_moves.size());
+    for (const auto& move : expected_moves) {
+        EXPECT_EQ(moves.count(move), 2);
+    }
+}*/
+
+
+
 TEST(PieceTest, BishopValidMoves) {
     Piece bishop(PieceType::Bishop, PieceColor::White);
     std::unordered_map<Position, Piece> board_position;
     Position start("c1");
-    Position mid("d4");
     board_position[start] = bishop;
     Position last_move("d2");
     std::unordered_set<Move> expected_moves{ {start, Position("d2"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
@@ -90,6 +108,45 @@ TEST(PieceTest, BishopValidMoves) {
         EXPECT_EQ(moves.count(move), 1);
     }
 }
+
+TEST(PieceTest, QueenValidMoves) {
+    Piece queen(PieceType::Queen, PieceColor::White);
+    std::unordered_map<Position, Piece> board_position;
+    Position start("d1");
+    board_position[start] = queen;
+    Position last_move("d1");
+    std::unordered_set<Move> expected_moves{ {start, Position("e1"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("f1"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("g1"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("h1"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("c1"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("b1"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("a1"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("d2"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("d3"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("d4"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("d5"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("d6"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("d7"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("d8"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("e2"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("f3"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("g4"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("h5"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("c2"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("b3"), PieceColor::White, PieceType::Queen, MoveType::Normal},
+                                             {start, Position("a4"), PieceColor::White, PieceType::Queen, MoveType::Normal} };
+    auto moves = queen.QueenValidMoves(start, board_position, last_move);
+    EXPECT_EQ(moves.size(), expected_moves.size());
+    for (const auto& move : expected_moves) {
+        EXPECT_EQ(moves.count(move), 1);
+    }
+}
+
+
+
+
+
 
 
 
