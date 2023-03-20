@@ -69,3 +69,27 @@ TEST(PieceTest, RookValidMoves) {
         EXPECT_EQ(moves.count(move), 1);
     }
 }
+
+TEST(PieceTest, BishopValidMoves) {
+    Piece bishop(PieceType::Bishop, PieceColor::White);
+    std::unordered_map<Position, Piece> board_position;
+    Position start("c1");
+    Position mid("d4");
+    board_position[start] = bishop;
+    Position last_move("d2");
+    std::unordered_set<Move> expected_moves{ {start, Position("d2"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
+                                             {start, Position("e3"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
+                                             {start, Position("f4"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
+                                             {start, Position("g5"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
+                                             {start, Position("h6"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
+                                             {start, Position("b2"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
+                                             {start, Position("a3"), PieceColor::White, PieceType::Bishop, MoveType::Normal}};
+    auto moves = bishop.BishopValidMoves(start, board_position, last_move);
+    EXPECT_EQ(moves.size(), expected_moves.size());
+    for (const auto& move : expected_moves) {
+        EXPECT_EQ(moves.count(move), 1);
+    }
+}
+
+
+
