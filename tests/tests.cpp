@@ -94,7 +94,7 @@ TEST(PieceTest, BishopValidMoves) {
     std::unordered_map<Position, Piece> board_position;
     Position start("c1");
     board_position[start] = bishop;
-    Position last_move("d2");
+    Position last_move("c1");
     std::unordered_set<Move> expected_moves{ {start, Position("d2"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
                                              {start, Position("e3"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
                                              {start, Position("f4"), PieceColor::White, PieceType::Bishop, MoveType::Normal},
@@ -137,6 +137,27 @@ TEST(PieceTest, QueenValidMoves) {
                                              {start, Position("b3"), PieceColor::White, PieceType::Queen, MoveType::Normal},
                                              {start, Position("a4"), PieceColor::White, PieceType::Queen, MoveType::Normal} };
     auto moves = queen.QueenValidMoves(start, board_position, last_move);
+    EXPECT_EQ(moves.size(), expected_moves.size());
+    for (const auto& move : expected_moves) {
+        EXPECT_EQ(moves.count(move), 1);
+    }
+}
+
+TEST(PieceTest, KingValidMoves) {
+    Piece king(PieceType::King, PieceColor::White);
+    std::unordered_map<Position, Piece> board_position;
+    Position start("e1");
+    board_position[start] = king;
+    Position last_move("e1");
+
+
+    std::unordered_set<Move> expected_moves{ {start, Position("d1"), PieceColor::White, PieceType::King, MoveType::Normal},
+                                             {start, Position("d2"), PieceColor::White, PieceType::King, MoveType::Normal},
+                                             {start, Position("e2"), PieceColor::White, PieceType::King, MoveType::Normal},
+                                             {start, Position("f2"), PieceColor::White, PieceType::King, MoveType::Normal},
+                                             {start, Position("f1"), PieceColor::White, PieceType::King, MoveType::Normal}};
+
+    auto moves = king.KingValidMoves(start, board_position, last_move);
     EXPECT_EQ(moves.size(), expected_moves.size());
     for (const auto& move : expected_moves) {
         EXPECT_EQ(moves.count(move), 1);
