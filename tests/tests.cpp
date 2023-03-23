@@ -70,7 +70,7 @@ TEST(PieceTest, RookValidMoves) {
     }
 }
 
-/*TEST(PieceTest, KnightValidMoves) {
+TEST(PieceTest, KnightValidMoves) {
     Piece knight(PieceType::Knight, PieceColor::White);
     std::unordered_map<Position, Piece> board_position;
     Position start("b1");
@@ -83,9 +83,9 @@ TEST(PieceTest, RookValidMoves) {
     auto moves = knight.KnightValidMoves(start, board_position, last_move);
     EXPECT_EQ(moves.size(), expected_moves.size());
     for (const auto& move : expected_moves) {
-        EXPECT_EQ(moves.count(move), 2);
+        EXPECT_EQ(moves.count(move), 1);
     }
-}*/
+}
 
 
 

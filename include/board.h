@@ -11,11 +11,6 @@
 
 
 
-//class PiecePosition {
-//  Piece piece;
-//  Position position;
-//};
-
 class Board {  
  public:
   Board() : last_move_position_{1, 1} {}
@@ -45,18 +40,7 @@ class Board {
     return false;
   }
  private:
-  // 8x8 cells
-  // cell -> empty: Piece.
-  // Piece type, color.
-
-  // move bknc4
-  // board position: b_king-xx;king-xx; [piece_position]*
-  // piece_position: e4
   std::unordered_map<Position, Piece> board_position_;
   Position last_move_position_;
-
-
-  //  case1: pieceIsValidMove(position -> position)
-  // case2: piece, position -> all valid positions.
 };
 
