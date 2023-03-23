@@ -166,7 +166,33 @@ TEST(PieceTest, KingValidMoves) {
 
 
 
-
+TEST(PieceTest, RookCanTakeOtherPieces) {
+  // Set up the board
+  std::unordered_map<Position, Piece> board_position = {
+      {Position("a1"), Piece(PieceType::Rook, PieceColor::White)},
+      {Position("c1"), Piece(PieceType::Bishop, PieceColor::White)},
+      {Position("a4"), Piece(PieceType::Bishop, PieceColor::Black)},
+      {Position("d4"), Piece(PieceType::Knight, PieceColor::Black)},
+      {Position("g4"), Piece(PieceType::Queen, PieceColor::Black)},
+      {Position("a8"), Piece(PieceType::Rook, PieceColor::Black)},
+      {Position("e8"), Piece(PieceType::King, PieceColor::Black)},
+  };
+  
+  // Get the rook's valid moves
+  Piece rook(PieceType::Rook, PieceColor::White);
+  std::unordered_set<Move> rook_moves = rook.ValidMoves(Position("a1"), board_position, Position(""));
+  Move move{ Position("a1"), Position("c1"), PieceColor::White, PieceType::Rook, MoveType::Normal };
+  Move move2{ Position("a1"), Position("a4"), PieceColor::White, PieceType::Rook, MoveType::Normal };
+  Move move3{ Position("a1"), Position("d4"), PieceColor::White, PieceType::Rook, MoveType::Normal };
+  Move move4{ Position("a1"), Position("g4"), PieceColor::White, PieceType::Rook, MoveType::Normal };
+  Move move5{ Position("a1"), Position("a8"), PieceColor::White, PieceType::Rook, MoveType::Normal };
+  // Check that the rook can take the bishop on c1, but not the bishop or knight on a4 or d4
+  EXPECT_TRUE(rook_moves.count(move)) << "Rook should be able to take bishop on c1";
+  EXPECT_FALSE(rook_moves.count(move2)) << "Rook should not be able to take bishop on a4";
+  EXPECT_FALSE(rook_moves.count(move3)) << "Rook should not be able to take knight on d4";
+  EXPECT_FALSE(rook_moves.count(move4)) << "Rook should not be able to take queen on g4";
+  EXPECT_FALSE(rook_moves.count(move5)) << "Rook should not be able to take own piece on a8";
+}
 
 
 
