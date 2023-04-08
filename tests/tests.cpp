@@ -259,5 +259,34 @@ TEST(PieceTest, BishopCanTakeOtherPieces) {
   EXPECT_FALSE(bishop_moves.count(Move{ Position("c1"), Position("h8"), PieceColor::White, PieceType::Bishop, MoveType::Normal })) << "Bishop should not be able to take its own piece on h8";
 }
 
+TEST(PieceTest, QueenCanTakeOtherPieces) {
+    // Set up the board
+    std::unordered_map<Position, Piece> board_position = {
+        {Position("d1"), Piece(PieceType::Queen, PieceColor::White)},
+        {Position("b3"), Piece(PieceType::Pawn, PieceColor::White)},
+        {Position("d3"), Piece(PieceType::Rook, PieceColor::Black)},
+        {Position("f3"), Piece(PieceType::Bishop, PieceColor::Black)},
+        {Position("c4"), Piece(PieceType::Knight, PieceColor::Black)},
+        {Position("g4"), Piece(PieceType::Pawn, PieceColor::Black)},
+        {Position("d8"), Piece(PieceType::Queen, PieceColor::Black)},
+        {Position("e8"), Piece(PieceType::King, PieceColor::Black)},
+    };
+
+    // Get the queen's valid moves
+    auto queen_moves = board_position.at(Position("d1")).ValidMoves(Position("d1"), board_position, Position(" "));
+    Move move1{ Position("d1"), Position("d3"), PieceColor::White, PieceType::Queen, MoveType::Normal };
+    Move move2{ Position("d1"), Position("f3"), PieceColor::White, PieceType::Queen, MoveType::Normal };
+    Move move3{ Position("d1"), Position("c4"), PieceColor::White, PieceType::Queen, MoveType::Normal };
+    Move move4{ Position("d1"), Position("g4"), PieceColor::White, PieceType::Queen, MoveType::Normal };
+    Move move5{ Position("d1"), Position("b3"), PieceColor::White, PieceType::Queen, MoveType::Normal };
+    // Check that the queen can take the rook, bishop, and knight, but not own piece or obstructed squares
+    EXPECT_TRUE(queen_moves.count(Move(move1))) << "Queen should be able to take rook on d3";
+    EXPECT_TRUE(queen_moves.count(Move(move2))) << "Queen should be able to take bishop on f3";
+    EXPECT_TRUE(queen_moves.count(Move(move3))) << "Queen should be able to take knight on c4";
+    EXPECT_TRUE(queen_moves.count(Move(move4))) << "Queen should be able to take pawn on g4";
+    EXPECT_FALSE(queen_moves.count(Move(move5))) << "Queen should not be able to take own piece on b3";
+    EXPECT_EQ(queen_moves.size(), 18) << "Queen should have 18 valid moves on an empty board";
 
 
+
+}
