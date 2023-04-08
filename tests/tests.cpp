@@ -213,7 +213,7 @@ TEST(PieceTest, RookCanTakeOtherPieces) {
   EXPECT_FALSE(rook_moves.count(move5)) << "Rook should not be able to take own piece on a8";
 }
 
-TEST(PieceTest, KnightCanTakePieces) {
+TEST(PieceTest, KnightCanTakeOtherPieces) {
     // Create a board with a knight that can take an opponent's piece
     std::unordered_map<Position, Piece> board = {
         {Position("d5"), Piece(PieceType::Knight, PieceColor::White)},
@@ -228,6 +228,36 @@ TEST(PieceTest, KnightCanTakePieces) {
     EXPECT_TRUE(knight_moves.count(Move(move))) << "Knight should be able to take pawn on c7";
 }
 
+TEST(PieceTest, BishopCanTakeOtherPieces) {
+  // Set up the board
+  std::unordered_map<Position, Piece> board_position = {
+      {Position("c1"), Piece(PieceType::Bishop, PieceColor::White)},
+      {Position("a3"), Piece(PieceType::Knight, PieceColor::Black)},
+      {Position("b2"), Piece(PieceType::Pawn, PieceColor::Black)},
+      {Position("d4"), Piece(PieceType::Queen, PieceColor::Black)},
+      {Position("f2"), Piece(PieceType::Pawn, PieceColor::White)},
+      {Position("g1"), Piece(PieceType::Knight, PieceColor::White)},
+      {Position("g7"), Piece(PieceType::Rook, PieceColor::Black)},
+      {Position("h8"), Piece(PieceType::Bishop, PieceColor::Black)},
+  };
+  
+  // Get the bishop's valid moves
+  Piece bishop(PieceType::Bishop, PieceColor::White);
+  std::unordered_set<Move> bishop_moves = bishop.ValidMoves(Position("c1"), board_position, Position(" "));
+  Move move{ Position("c1"), Position("a3"), PieceColor::White, PieceType::Bishop, MoveType::Normal };
+  Move move2{ Position("c1"), Position("b2"), PieceColor::White, PieceType::Bishop, MoveType::Normal };
+  Move move3{ Position("c1"), Position("d4"), PieceColor::White, PieceType::Bishop, MoveType::Normal };
+  Move move4{ Position("c1"), Position("f2"), PieceColor::White, PieceType::Bishop, MoveType::Normal };
+  Move move5{ Position("c1"), Position("g1"), PieceColor::White, PieceType::Bishop, MoveType::Normal };
+  // Check that the bishop can take the knight on a3, the pawn on b2, and the queen on d4
+  EXPECT_TRUE(bishop_moves.count(move)) << "Bishop should be able to take knight on a3";
+  EXPECT_TRUE(bishop_moves.count(move2)) << "Bishop should be able to take pawn on b2";
+  EXPECT_TRUE(bishop_moves.count(move3)) << "Bishop should be able to take queen on d4";
+  // Check that the bishop cannot take the pawn on f2, the knight on g1, or its own piece on h8
+  EXPECT_FALSE(bishop_moves.count(move4)) << "Bishop should not be able to take pawn on f2";
+  EXPECT_FALSE(bishop_moves.count(move5)) << "Bishop should not be able to take knight on g1";
+  EXPECT_FALSE(bishop_moves.count(Move{ Position("c1"), Position("h8"), PieceColor::White, PieceType::Bishop, MoveType::Normal })) << "Bishop should not be able to take its own piece on h8";
+}
 
 
 
