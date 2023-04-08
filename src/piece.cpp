@@ -2,108 +2,153 @@
 
 #include "../include/board.h"
 
+// This function generates the set of valid moves for a queen, rook, or bishop
+// given the start position, the board layout, the piece color and type, the 
+// directions to search for moves, and whether the piece can only move one step.
 std::unordered_set<Move> QueenRookBishopMoves(
-    Position start, std::unordered_map<Position, Piece> board_position,
-    PieceColor color, PieceType type,
-    const std::vector<std::pair<int, int>> directions, bool one_step = false) {
-  std::unordered_set<Move> moves;
-  Move move = {start, start, color, type, MoveType::Normal};
+    Position start, // The starting position of the piece
+    std::unordered_map<Position, Piece> board_position, // The current board layout
+    PieceColor color, // The color of the piece
+    PieceType type, // The type of the piece
+    const std::vector<std::pair<int, int>> directions, // The directions to search for moves
+    bool one_step = false // Whether the piece can only move one step
+) {
+    std::unordered_set<Move> moves;
+    Move move = { start, start, color, type, MoveType::Normal };
 
-  for (const auto& direction : directions) {
-    Position position = start;
-    while (true) {
-      if (direction.first == -1 && position.row == Row::_1) {
-        break;
-      }
-      if (direction.first == 1 && position.row == Row::_8) {
-        break;
-      }
-      if (direction.second == -1 && position.column == Column::A) {
-        break;
-      }
-      if (direction.second == 1 && position.column == Column::H) {
-        break;
-      }
-      position.row =
-          static_cast<Row>(static_cast<int>(position.row) + direction.first);
-      position.column = static_cast<Column>(static_cast<int>(position.column) +
-                                            direction.second);
-      Move copy(move);
-      copy.end_ = position;
-      auto it = board_position.find(position);
-      if (it != board_position.end()) {
-        if (board_position[position].Color() != color) {
-          moves.insert(copy);
+    // Iterate through the directions to search for moves
+    for (const auto& direction : directions) {
+        Position position = start;
+        while (true) {
+            // Check if the position is at the edge of the board
+            if (direction.first == -1 && position.row == Row::_1) {
+                break;
+            }
+            if (direction.first == 1 && position.row == Row::_8) {
+                break;
+            }
+            if (direction.second == -1 && position.column == Column::A) {
+                break;
+            }
+            if (direction.second == 1 && position.column == Column::H) {
+                break;
+            }
+
+            // Move the position in the current direction
+            position.row =
+                static_cast<Row>(static_cast<int>(position.row) + direction.first);
+            position.column = static_cast<Column>(static_cast<int>(position.column) +
+                direction.second);
+
+            // Create a copy of the move with the new end position
+            Move copy(move);
+            copy.end_ = position;
+
+            // Check if there is a piece at the new position
+            auto it = board_position.find(position);
+            if (it != board_position.end()) {
+                // If there is a piece, check if it is an enemy piece and add the move
+                // to the set of moves if it is
+                if (board_position[position].Color() != color) {
+                    moves.insert(copy);
+                }
+                break;
+            }
+
+            // If there is no piece, add the move to the set of moves
+            moves.insert(copy);
+
+            // If the piece can only move one step, break out of the loop
+            if (one_step) {
+                break;
+            }
         }
-        break;
-      }
-      moves.insert(copy);
-      if (one_step) {
-        break;
-      }
     }
-  }
-  return moves;
+    return moves;
 }
 
+
+
+
+
+// This function returns a set of positions that a queen, rook, or bishop can
+// move to or attack from the given starting position, based on the given
+// directions. It also takes into account the current state of the board
+// (board_position) and the color of the piece (color). If one_step is true, the
+// function only considers moves in the given directions that are one step away
+// from the starting position.
 std::unordered_set<Position> QueenRookBishopAttackedPositions(
     Position start, std::unordered_map<Position, Piece> board_position,
     PieceColor color, PieceType type,
     const std::vector<std::pair<int, int>> directions, bool one_step = false) {
-  std::unordered_set<Position> positions;
+    std::unordered_set<Position> positions;
 
-  for (const auto& direction : directions) {
-    Position position = start;
-    while (true) {
-      if (direction.first == -1 && position.row == Row::_1) {
-        break;
-      }
-      if (direction.first == 1 && position.row == Row::_8) {
-        break;
-      }
-      if (direction.second == -1 && position.column == Column::A) {
-        break;
-      }
-      if (direction.second == 1 && position.column == Column::H) {
-        break;
-      }
-      position.row =
-          static_cast<Row>(static_cast<int>(position.row) + direction.first);
-      position.column = static_cast<Column>(static_cast<int>(position.column) +
-                                            direction.second);
+    for (const auto& direction : directions) {
+        Position position = start;
+        while (true) {
+            // Check if we've hit a board edge in the given direction.
+            if (direction.first == -1 && position.row == Row::_1) {
+                break;
+            }
+            if (direction.first == 1 && position.row == Row::_8) {
+                break;
+            }
+            if (direction.second == -1 && position.column == Column::A) {
+                break;
+            }
+            if (direction.second == 1 && position.column == Column::H) {
+                break;
+            }
+            // Move the position in the given direction.
+            position.row =
+                static_cast<Row>(static_cast<int>(position.row) + direction.first);
+            position.column = static_cast<Column>(static_cast<int>(position.column) +
+                direction.second);
 
-      auto it = board_position.find(position);
-      if (it != board_position.end()) {
-        
-          positions.insert(position);
-        
-        break;
-      }
-      positions.insert(position);
-      if (one_step) {
-        break;
-      }
+            // Check if the new position is occupied by an opponent's piece.
+            auto it = board_position.find(position);
+            if (it != board_position.end()) {
+                if (board_position[position].Color() != color) {
+                    positions.insert(position);
+                }
+                break;
+            }
+            // If the new position is empty, add it to the set of attacked positions.
+            positions.insert(position);
+            if (one_step) {
+                break;
+            }
+        }
     }
-  }
-  return positions;
+    return positions;
 }
 
+
+// This function filters out moves that would put the current player's king in
+// check. It takes a set of moves (moves) and the current state of the board
+// (board_position). The function first finds the current player's king, and
+// then simulates each move to see if it leaves the king in check. If a move
+// does put the king in check, it is removed from the set of moves.
 void FilterOnKingPosition(std::unordered_set<Move>& moves,
-     std::unordered_map<Position, Piece> board_position) {
-  if (moves.empty()) {
-    return;
-  }
-  const auto color = board_position[moves.begin()->start_].Color();
-  Position king_position(1, 1);
-  for (auto it = board_position.begin(); it != board_position.end(); ++it) {
-    if (it->second.Color() == color && it->second.Type() == PieceType::King) {
-      king_position = it->first;
+    std::unordered_map<Position, Piece> board_position) {
+    if (moves.empty()) {
+        return;
     }
-  }
-  for (auto move_it = moves.begin(); move_it != moves.end();) {
-    auto move = *move_it;
-    auto board_copy = board_position;
-    board_copy[move.end_] = Piece(move.type_, move.color_);
+    // Find the current player's king.
+    const auto color = board_position[moves.begin()->start_].Color();
+    Position king_position(1, 1);
+    for (auto it = board_position.begin(); it != board_position.end(); ++it) {
+        if (it->second.Color() == color && it->second.Type() == PieceType::King) {
+            king_position = it->first;
+        }
+    }
+    // Iterate over each move and simulate it on a copy of the board. Then check
+    // if the opponent can attack the king in the new board state. If so, remove
+    // the move from the set of moves.
+    for (auto move_it = moves.begin(); move_it != moves.end();) {
+        auto move = *move_it;
+        auto board_copy = board_position;
+        board_copy[move.end_] = Piece(move.type_, move.color_);
     board_copy.erase(move.start_);
 
     auto opponent_attacked_positions = Board::AttackedPositions(
@@ -124,6 +169,8 @@ void FilterOnKingPosition(std::unordered_set<Move>& moves,
     }
   }
 }
+
+
 
 Piece::Piece(const std::string& piece_str) {
   color_ = piece_str[0] == 'w' ? PieceColor::White : PieceColor::Black;
@@ -183,52 +230,64 @@ std::string Piece::ToString() const {
   return color_str + type_str;
 }
 
-std::unordered_set<Move> Piece::ValidMoves(
-    Position start, std::unordered_map<Position, Piece> board_position,
-    Position last_move) const {
-  std::unordered_set<Move> moves;
+// Returns the set of valid moves that can be made by the piece at the given starting position
+// on the given board position, taking into account the last move made on the board.
+std::unordered_set<Move> Piece::ValidMoves(Position start, std::unordered_map<Position, Piece> board_position, Position last_move) const {
+    std::unordered_set<Move> moves;
 
-  switch (type_) {
+    // Determine the type of the piece and call the corresponding function to calculate its valid moves.
+    switch (type_) {
     case PieceType::Bishop:
-      return BishopValidMoves(start, board_position, last_move);
+        return BishopValidMoves(start, board_position, last_move);
     case PieceType::King:
-      return KingValidMoves(start, board_position, last_move);
+        return KingValidMoves(start, board_position, last_move);
     case PieceType::Knight:
-      return KnightValidMoves(start, board_position, last_move);
+        return KnightValidMoves(start, board_position, last_move);
     case PieceType::Pawn:
-      return PawnValidMoves(start, board_position, last_move);
+        return PawnValidMoves(start, board_position, last_move);
     case PieceType::Queen:
-      return QueenValidMoves(start, board_position, last_move);
+        return QueenValidMoves(start, board_position, last_move);
     case PieceType::Rook:
-      return RookValidMoves(start, board_position, last_move);
+        return RookValidMoves(start, board_position, last_move);
     default:
-      throw std::exception();
-  }
-  return moves;
+        // Throw an exception if an invalid piece type is encountered.
+        throw std::exception();
+    }
+
+    // Return the set of valid moves for the piece.
+    return moves;
 }
 
-std::unordered_set<Position> Piece::AttackedPositions(
-    Position start, std::unordered_map<Position, Piece> board_position) const {
-  std::unordered_set<Position> positions;
+// Returns the set of positions attacked by the piece at the given starting position on the given board position.
+std::unordered_set<Position> Piece::AttackedPositions(Position start, std::unordered_map<Position, Piece> board_position) const {
+    std::unordered_set<Position> positions;
 
-  switch (type_) {
+    // Determine the type of the piece and call the corresponding function to calculate the positions it attacks.
+    switch (type_) {
     case PieceType::Bishop:
-      return BishopAttackedPositions(start, board_position);
+        return BishopAttackedPositions(start, board_position);
     case PieceType::King:
-      return KingAttackedPositions(start, board_position);
+        return KingAttackedPositions(start, board_position);
     case PieceType::Knight:
-      return KnightAttackedPositions(start, board_position);
+        return KnightAttackedPositions(start, board_position);
     case PieceType::Pawn:
-      return PawnAttackedPositions(start, board_position);
+        return PawnAttackedPositions(start, board_position);
     case PieceType::Queen:
-      return QueenAttackedPositions(start, board_position);
+        return QueenAttackedPositions(start, board_position);
     case PieceType::Rook:
-      return RookAttackedPositions(start, board_position);
+        return RookAttackedPositions(start, board_position);
     default:
-      throw std::exception();
-  }
-  return positions;
+        // Throw an exception if an invalid piece type is encountered.
+        throw std::exception();
+    }
+
+    // Return the set of positions attacked by the piece.
+    return positions;
 }
+
+
+// This function returns a set of valid moves that a pawn can make from its current position
+// based on the current state of the chessboard.
 
 std::unordered_set<Move> Piece::PawnValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
@@ -241,18 +300,22 @@ std::unordered_set<Move> Piece::PawnValidMoves(
     step = -1;
   }
 
-  Move move = {start, start, color_, type_, MoveType::Normal};
-  // move.piece_ = *this;
-  // move.start_ = start;
+  // Create a Move object representing the pawn's current position.
+  Move move = { start, start, color_, type_, MoveType::Normal };
 
+  // Calculate the next position that the pawn can move to.
   auto next_1position = start;
-  next_1position.row =
-      static_cast<Row>(static_cast<int>(next_1position.row) + step);
+  next_1position.row = static_cast<Row>(static_cast<int>(next_1position.row) + step);
+
+  // Check if the next position is not occupied by any other piece.
   if (board_position.find(next_1position) == board_position.end()) {
-    auto copy = move;
-    copy.end_ = next_1position;
-    moves.insert(copy);
+      auto copy = move;
+      copy.end_ = next_1position;
+      moves.insert(copy);
   }
+
+  // If the pawn is in its initial position and the two squares ahead are not occupied,
+// then add a move to the set.
   auto next_2position = next_1position;
   next_2position.row =
       static_cast<Row>(static_cast<int>(next_2position.row) + step);
@@ -265,6 +328,7 @@ std::unordered_set<Move> Piece::PawnValidMoves(
     moves.insert(copy);
   }
 
+  // Check if there is an enemy piece to the left of the pawn that it can capture.
   if (start.column != Column::A) {
     auto left_position = start;
 
@@ -315,9 +379,7 @@ std::unordered_set<Move> Piece::PawnValidMoves(
     }
   }
 
-  // start.row += step;
-  // start.row += step; start.column +/-= 1;
-  // start.row += 2 * step;
+
   FilterOnKingPosition(moves, board_position);
   
   return moves;
@@ -326,54 +388,61 @@ std::unordered_set<Move> Piece::PawnValidMoves(
 std::unordered_set<Move> Piece::BishopValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
     Position last_move) const {
-  // 4 Directions
-  // Either Position(-1, 0)  (0,0)......(0,7)
-  //                           .          .
-  //                         (7,0) .....(7,7)
-  // OR Position not empty. If self, no add.
-  //                        if opponent, add and stop.
 
-  const std::vector<std::pair<int, int>> directions = {
-      {1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
+    // Define the directions in which a bishop can move
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 1}, {1, -1}, {-1, -1}, {-1, 1} };
 
-  std::unordered_set<Move> moves =
-      QueenRookBishopMoves(start, board_position, color_, type_, directions);
-  FilterOnKingPosition(moves, board_position);
-  return moves;
+    // Get all valid bishop moves by calling the QueenRookBishopMoves function
+    std::unordered_set<Move> moves =
+        QueenRookBishopMoves(start, board_position, color_, type_, directions);
+
+    // Filter out moves that would leave the king in check
+    FilterOnKingPosition(moves, board_position);
+
+    // Return the set of valid bishop moves
+    return moves;
 }
 
 std::unordered_set<Move> Piece::KingValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
     Position last_move) const {
-  const std::vector<std::pair<int, int>> directions = {
-      {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
-  std::unordered_set<Move> moves = QueenRookBishopMoves(
-      start, board_position, color_, type_, directions, true);
-  // K-R
-  //
-  for (auto move_it = moves.begin(); move_it != moves.end();) {
-    auto move = *move_it;
-    auto board_copy = board_position;
-    board_copy[move.end_] = Piece(move.type_, move.color_);
-    board_copy.erase(start);
 
-    auto opponent_attacked_positions = Board::AttackedPositions(
-        board_copy, move.color_ == PieceColor::Black ? PieceColor::White
-                                                     : PieceColor::Black);
-    auto it = std::find_if(opponent_attacked_positions.begin(),
-                           opponent_attacked_positions.end(), [&](Position position) {
-          if (move.end_ == position) {
-            return true;
-          }
-          return false;
-        });
+    // Define the directions in which a king can move
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1} };
 
-    if (it != opponent_attacked_positions.end()) {
-      move_it = moves.erase(move_it);
-    } else {
-      ++move_it;
+    // Get all valid king moves by calling the QueenRookBishopMoves function with the special parameter 'is_king' set to true
+    std::unordered_set<Move> moves = QueenRookBishopMoves(
+        start, board_position, color_, type_, directions, true);
+
+    // Filter out moves that would leave the king in check
+    for (auto move_it = moves.begin(); move_it != moves.end();) {
+        auto move = *move_it;
+        auto board_copy = board_position;
+        board_copy[move.end_] = Piece(move.type_, move.color_);
+        board_copy.erase(start);
+
+        // Check if the move would leave the opponent's king in check
+        auto opponent_attacked_positions = Board::AttackedPositions(
+            board_copy, move.color_ == PieceColor::Black ? PieceColor::White
+            : PieceColor::Black);
+        auto it = std::find_if(opponent_attacked_positions.begin(),
+            opponent_attacked_positions.end(), [&](Position position) {
+                if (move.end_ == position) {
+                    return true;
+                }
+                return false;
+            });
+
+        // Remove the move if it would leave the opponent's king in check
+        if (it != opponent_attacked_positions.end()) {
+            move_it = moves.erase(move_it);
+        }
+        else {
+            ++move_it;
+        }
     }
-  }
   auto opponent_attacked_positions = Board::AttackedPositions(
       board_position, board_position[start].Color() == PieceColor::Black
                           ? PieceColor::White
@@ -482,45 +551,68 @@ std::unordered_set<Move> Piece::KingValidMoves(
 std::unordered_set<Move> Piece::QueenValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
     Position last_move) const {
-  const std::vector<std::pair<int, int>> directions = {
-      {1, 1}, {1, -1}, {-1, -1}, {-1, 1}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 1}, {1, -1}, {-1, -1}, {-1, 1}, {1, 0}, {-1, 0}, {0, 1}, {0, -1} };
 
-  std::unordered_set<Move> moves =
-      QueenRookBishopMoves(start, board_position, color_, type_, directions);
-  FilterOnKingPosition(moves, board_position);
-  return moves;
+    // Calculate all possible moves using the QueenRookBishopMoves helper function
+    std::unordered_set<Move> moves =
+        QueenRookBishopMoves(start, board_position, color_, type_, directions);
+
+    // Filter out moves that would leave the king in check
+    FilterOnKingPosition(moves, board_position);
+
+    // Return the resulting set of valid moves
+    return moves;
 }
+
 std::unordered_set<Move> Piece::KnightValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
     Position last_move) const {
-  const std::vector<std::pair<int, int>> directions = {
-      {1, 2}, {2, 1}, {-1, 2}, {2, -1}, {1, -2}, {-2, 1}, {-2, -1}, {-1, -2}};
-  std::unordered_set<Move> moves =
-      QueenRookBishopMoves(start, board_position, color_, type_, directions, true);
-  FilterOnKingPosition(moves, board_position);
-  return moves;
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 2}, {2, 1}, {-1, 2}, {2, -1}, {1, -2}, {-2, 1}, {-2, -1}, {-1, -2} };
+
+    // Calculate all possible moves using the QueenRookBishopMoves helper function, but set the flag for knight moves to true
+    std::unordered_set<Move> moves =
+        QueenRookBishopMoves(start, board_position, color_, type_, directions, true);
+
+    // Filter out moves that would leave the king in check
+    FilterOnKingPosition(moves, board_position);
+
+    // Return the resulting set of valid moves
+    return moves;
 }
+
 std::unordered_set<Move> Piece::RookValidMoves(
     Position start, std::unordered_map<Position, Piece> board_position,
     Position last_move) const {
-  const std::vector<std::pair<int, int>> directions = {
-      {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-  std::unordered_set<Move> moves =
-      QueenRookBishopMoves(start, board_position, color_, type_, directions);
-  FilterOnKingPosition(moves, board_position);
-  return moves;
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 0}, {-1, 0}, {0, 1}, {0, -1} };
+
+    // Calculate all possible moves using the QueenRookBishopMoves helper function
+    std::unordered_set<Move> moves =
+        QueenRookBishopMoves(start, board_position, color_, type_, directions);
+
+    // Filter out moves that would leave the king in check
+    FilterOnKingPosition(moves, board_position);
+
+    // Return the resulting set of valid moves
+    return moves;
 }
 
 std::unordered_set<Position> Piece::PawnAttackedPositions(
     Position start, std::unordered_map<Position, Piece> board_position) const {
-  std::unordered_set<Position> positions;
-  int step = 1;
-  if (color_ == PieceColor::White) {
-    step = 1;
-  } else {
-    step = -1;
-  }
-  
+    std::unordered_set<Position> positions;
+
+    // Calculate the direction of movement for the pawn
+    int step = 1;
+    if (color_ == PieceColor::White) {
+        step = 1;
+    }
+    else {
+        step = -1;
+    }
+
+    // Calculate the position of the pawn's attacks
   auto left_position = start;
   if (start.column != Column::A) {
     left_position.column = static_cast<Column>(static_cast<int>(left_position.column) - 1);
@@ -564,41 +656,52 @@ std::unordered_set<Position> Piece::BishopAttackedPositions(
   return positions;
 }
 
+// This function returns the set of positions that a king can attack from a given starting position.
 std::unordered_set<Position> Piece::KingAttackedPositions(
     Position start, std::unordered_map<Position, Piece> board_position) const {
-  const std::vector<std::pair<int, int>> directions = {
-      {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
-  std::unordered_set<Position> positions = QueenRookBishopAttackedPositions(
-      start, board_position, color_, type_, directions, true);
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {-1, -1}, {1, -1} }; // The 8 possible directions a king can move in.
 
-  return positions;
+    // Get the set of attacked positions by calling the QueenRookBishopAttackedPositions function with the appropriate arguments.
+    std::unordered_set<Position> positions = QueenRookBishopAttackedPositions(
+        start, board_position, color_, type_, directions, true);
+
+    return positions;
 }
 
+// This function returns the set of positions that a queen can attack from a given starting position.
 std::unordered_set<Position> Piece::QueenAttackedPositions(
     Position start, std::unordered_map<Position, Piece> board_position) const {
-  const std::vector<std::pair<int, int>> directions = {
-      {1, 1}, {1, -1}, {-1, -1}, {-1, 1}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 1}, {1, -1}, {-1, -1}, {-1, 1}, {1, 0}, {-1, 0}, {0, 1}, {0, -1} }; // The 8 possible directions a queen can move in.
 
-  std::unordered_set<Position> positions =
-      QueenRookBishopAttackedPositions(start, board_position, color_, type_, directions);
-  return positions;
+    // Get the set of attacked positions by calling the QueenRookBishopAttackedPositions function with the appropriate arguments.
+    std::unordered_set<Position> positions =
+        QueenRookBishopAttackedPositions(start, board_position, color_, type_, directions);
+    return positions;
 }
 
+// This function returns the set of positions that a knight can attack from a given starting position.
 std::unordered_set<Position> Piece::KnightAttackedPositions(
     Position start, std::unordered_map<Position, Piece> board_position) const {
-  const std::vector<std::pair<int, int>> directions = {
-      {1, 2}, {2, 1}, {-1, 2}, {2, -1}, {1, -2}, {-2, 1}, {-2, -1}, {-1, -2}};
-  std::unordered_set<Position> positions = QueenRookBishopAttackedPositions(
-      start, board_position, color_, type_, directions);
-  return positions;
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 2}, {2, 1}, {-1, 2}, {2, -1}, {1, -2}, {-2, 1}, {-2, -1}, {-1, -2} }; // The 8 possible moves a knight can make.
+
+    // Get the set of attacked positions by calling the QueenRookBishopAttackedPositions function with the appropriate arguments.
+    std::unordered_set<Position> positions = QueenRookBishopAttackedPositions(
+        start, board_position, color_, type_, directions);
+    return positions;
 }
 
+// This function returns the set of positions that a rook can attack from a given starting position.
 std::unordered_set<Position> Piece::RookAttackedPositions(
     Position start, std::unordered_map<Position, Piece> board_position) const {
-  const std::vector<std::pair<int, int>> directions = {
-      {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-  std::unordered_set<Position> positions = QueenRookBishopAttackedPositions(
-      start, board_position, color_, type_, directions);
-  return positions;
+    const std::vector<std::pair<int, int>> directions = {
+        {1, 0}, {-1, 0}, {0, 1}, {0, -1} }; // The 4 possible directions a rook can move in.
+
+    // Get the set of attacked positions by calling the QueenRookBishopAttackedPositions function with the appropriate arguments.
+    std::unordered_set<Position> positions = QueenRookBishopAttackedPositions(
+        start, board_position, color_, type_, directions);
+    return positions;
 }
 
