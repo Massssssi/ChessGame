@@ -273,3 +273,23 @@ TEST(PieceTest, KingCanTakeOtherPiecesAndCannotTakeOwnPieces) {
     EXPECT_TRUE(king_moves.count(Move(move1))) << "King should be able to take rook on d2";
     EXPECT_FALSE(king_moves.count(Move(move2))) << "King should not be able to move to own piece on e1";
 }
+
+TEST(PieceTest, PawnCanTakeOtherPieces) {
+    // Set up the board
+    std::unordered_map<Position, Piece> board_position = {
+        {Position("d2"), Piece(PieceType::Pawn, PieceColor::White)},
+        {Position("c3"), Piece(PieceType::Pawn, PieceColor::Black)},
+        {Position("e3"), Piece(PieceType::Knight, PieceColor::White)},
+    };
+
+    // Get the pawn's valid moves
+    auto pawn_moves = board_position.at(Position("d2")).ValidMoves(Position("d2"), board_position, Position(" "));
+    Move move1{ Position("d2"), Position("c3"), PieceColor::White, PieceType::Pawn, MoveType::Normal };
+    Move move2{ Position("d2"), Position("e3"), PieceColor::White, PieceType::Pawn, MoveType::Normal };
+
+
+    // Check that the pawn can take black pawn but not own piece or obstructed squares
+    EXPECT_TRUE(pawn_moves.count(Move(move1))) << "Pawn should be able to take black pawn on c3";
+    EXPECT_FALSE(pawn_moves.count(Move(move2))) << "Pawn should not be able to take black pawn on e3";
+  
+}
