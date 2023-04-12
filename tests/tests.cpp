@@ -307,4 +307,20 @@ TEST(EndgameTest, CheckmateWithFewPieces) {
     EXPECT_EQ(white_king_moves.size(), 1);
 }
 
+TEST(PieceTest, EnPassantCapture) {
+    // Set up the board with pawns ready for en passant capture
+    std::unordered_map<Position, Piece> board_position = {
+        {Position("d5"), Piece(PieceType::Pawn, PieceColor::White)},
+        {Position("c7"), Piece(PieceType::Pawn, PieceColor::Black)},
+        {Position("e7"), Piece(PieceType::Pawn, PieceColor::Black)},
+    };
+    // Set the last move to the black pawn advancing two squares to c7
+    Position last_move("c7");
+
+    // Get the white pawn's valid moves
+    auto white_pawn_moves = board_position.at(Position("d5")).ValidMoves(Position("d5"), board_position, last_move);
+
+    // Expect the white pawn to have one valid move, which is the en passant capture
+    EXPECT_EQ(white_pawn_moves.size(), 1);
+}
 
