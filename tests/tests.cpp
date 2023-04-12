@@ -12,7 +12,7 @@
 #include "./include/gtest/gtest.h" // Using Google Test framework
 
 
-TEST(PawnValidMovesTest, ReturnsCorrectValidMoves) {
+TEST(PieceTest, ReturnsCorrectValidMoves) {
     // Creates an empty chess board represented by an unordered_map.
     std::unordered_map<Position, Piece> board;
 
@@ -36,7 +36,7 @@ TEST(PawnValidMovesTest, ReturnsCorrectValidMoves) {
 }
 
 
-TEST(PawnValidMovesTest, WhitePawnCanMoveOneOrTwoStepsForward) {
+TEST(PieceTest, WhitePawnCanMoveOneOrTwoStepsForward) {
     // Creates an empty chess board represented by an unordered_map.
     std::unordered_map<Position, Piece> board;
 
@@ -293,3 +293,18 @@ TEST(PieceTest, PawnCanTakeOtherPieces) {
     EXPECT_FALSE(pawn_moves.count(Move(move2))) << "Pawn should not be able to take black pawn on e3";
   
 }
+
+TEST(EndgameTest, CheckmateWithFewPieces) {
+    // Set up the board with only a few pieces remaining
+    std::unordered_map<Position, Piece> board_position = {
+        {Position("a1"), Piece(PieceType::King, PieceColor::White)},
+        {Position("a8"), Piece(PieceType::King, PieceColor::Black)},
+        {Position("b7"), Piece(PieceType::Rook, PieceColor::Black)},
+    };
+
+    // White king should have no valid moves and should be in checkmate
+    auto white_king_moves = board_position.at(Position("a1")).KingValidMoves(Position("a1"), board_position, Position(" "));
+    EXPECT_EQ(white_king_moves.size(), 1);
+}
+
+
